@@ -1,0 +1,19 @@
+GET https://acessoaccount.herokuapp.com/api/Account
+
+###
+GET https://acessoaccount.herokuapp.com/api/Account/87029704
+
+###
+POST https://acessoaccount.herokuapp.com/api/Account
+Content-Type: application/json
+
+{
+  "accountNumber": "87029704",
+  "value": 301.67201,
+  "type": "Credit"
+}
+
+###
+GET http://localhost:3000
+
+###
