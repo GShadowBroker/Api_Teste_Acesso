@@ -6,13 +6,12 @@ export class FundTransferController {
   constructor(private readonly fundTransferService: FundTransferService) { }
 
   @Post()
-  createTransfer(
+  async createTransfer(
     @Body('accountOrigin') accountOrigin: string,
     @Body('accountDestination') accountDestination: string,
     @Body('value') value: number,
   ) {
-    // TODO validations
-    return this.fundTransferService.doFundTransfer(
+    return await this.fundTransferService.doFundTransfer(
       accountOrigin,
       accountDestination,
       value,
@@ -21,7 +20,6 @@ export class FundTransferController {
 
   @Get(':transactionId')
   async requestTransferStatus(@Param('transactionId') transactionId: string) {
-    if (!transactionId || transactionId.length < 4) throw new HttpException("Invalid or missing transactionId", HttpStatus.BAD_REQUEST);
-    return `The transaction ID is ${transactionId}`;
+    return await this.fundTransferService.checkTransactionStatus(transactionId);
   }
 }

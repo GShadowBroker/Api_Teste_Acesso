@@ -21,10 +21,10 @@ POST http://localhost:3000/api/fund-transfer
 Content-Type: application/json
 
 {
-  "accountOrigin": "123456",
-  "accountDestination": "654321",
+  "accountOrigin": "97267810",
+  "accountDestination": "97267810",
   "value": 10.0
 }
 
 ###
-GET http://localhost:3000/api/fund-transfer/14180104
+GET http://localhost:3000/api/fund-transfer/a4bc7de7-bc25-4a3e-a771-1a3bdc0a647d

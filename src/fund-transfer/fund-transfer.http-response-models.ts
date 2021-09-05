@@ -1,7 +1,21 @@
+/**
+ * Builds a standard transactionId response object. It is the object returned when requesting a new fund transfer.
+ * @param transactionId [string] The id of the transaction which is used to check the status of said transaction.
+ */
 export class TransactionIdResponse {
   transactionId: string;
+  constructor(transactionId: string) {
+    this.transactionId = transactionId;
+  }
 }
 
+/**
+ * Enum representing the possible transfer status of a fund transfer.
+ * @param IN_QUEUE
+ * @param CONFIRMED
+ * @param PROCESSING
+ * @param ERROR
+ */
 export enum TransferStatus {
   IN_QUEUE = 'In Queue',
   PROCESSING = 'Processing',
@@ -15,11 +29,11 @@ export enum TransferStatus {
  * @param message If status is an Error, send message explaining the error.
  */
 export class TransactionStatusResponse {
-  Status: TransferStatus;
-  Message?: string;
+  status: TransferStatus;
+  message?: string;
 
   constructor(status: TransferStatus, message?: string) {
-    this.Status = status;
-    this.Message = message;
+    this.status = status;
+    this.message = message;
   }
 }
