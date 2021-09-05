@@ -1,4 +1,18 @@
+import * as mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+
+export const FundTransferSchema = new mongoose.Schema({
+  transactionId: { type: String, required: true },
+  accountOrigin: { type: String, required: true },
+  accountDestination: { type: String, required: true },
+  value: { type: Number, required: true },
+  status: {
+    type: String,
+    enum: ["In Queue", "Processing", "Confirmed", "Error"],
+    default: "In Queue"
+  },
+  errorMessage: String
+});
 
 /**
  * Creates a fund transfer object which is going to be saved in the database.
