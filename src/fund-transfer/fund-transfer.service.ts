@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger, Req, Scope } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, Logger, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { FundTransfer } from './fund-transfer.model';

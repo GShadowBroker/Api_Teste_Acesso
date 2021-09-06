@@ -9,6 +9,7 @@ import axios from 'axios';
 @Injectable()
 export class BackgroundTasksService {
   private readonly logger = new Logger(BackgroundTasksService.name);
+  private readonly pendingTransferFromOrigin: string[] = [];
 
   constructor(
     @InjectModel('FundTransfer')
@@ -33,6 +34,8 @@ export class BackgroundTasksService {
       this.logger.log(`Processing transaction '${transaction.transactionId}'`);
       this.handleFundTransfer(transaction);
     }
+
+    await this.ping();
   }
 
   /**
@@ -84,11 +87,13 @@ export class BackgroundTasksService {
       return;
     }
 
-    // TODO make sure both operations are finished, not just one
-
     // add value to destination
-    const isCreditOperationFinished = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit");
+    const isTransferToDestinationComplete = this.pendingTransferFromOrigin.indexOf(transaction.transactionId) > -1;
 
+    let isCreditOperationFinished;
+    if (!isTransferToDestinationComplete) {
+      isCreditOperationFinished = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit");
+    }
     if (!isCreditOperationFinished) {
       this.logger.warn("Error finishing transaction on account destination.");
       return;
@@ -98,8 +103,16 @@ export class BackgroundTasksService {
     const isDebitOperationFinished = await this.executeTransfer(transaction.transactionId, transaction.accountOrigin, transaction.value, "Debit");
 
     if (!isDebitOperationFinished) {
-      this.logger.warn("Error finishing transaction on account origin.");
+      this.logger.warn("Error finishing transaction on account origin. Retrying in the next cicle");
+      this.pendingTransferFromOrigin.push(transaction.transactionId);
       return;
+
+    } else {
+      // remove from pending array if complete
+      const index = this.pendingTransferFromOrigin.indexOf(transaction.transactionId);
+      if (index > -1) {
+        this.pendingTransferFromOrigin.splice(index, 1);
+      }
     }
 
     // update transaction status to confirmed
@@ -207,5 +220,13 @@ export class BackgroundTasksService {
     }
 
     return false;
+  }
+
+  /**
+   * Pings the server, keeping heroku's dynos awake. We don't want the app to sleep since that would mean
+   * our cron jobs wouldn't be able to run. :) I'm not using Heroku Scheduler because I want to keep the app as agnostic as possible.
+   */
+  private async ping() {
+    return axios.get(process.env.HOST_URL);
   }
 }
