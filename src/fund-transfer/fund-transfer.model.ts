@@ -41,3 +41,12 @@ export class FundTransfer {
     this.status = TransferStatus.IN_QUEUE;
   }
 }
+
+/**
+ * The shape of an Account object.
+ */
+export interface IAccount {
+  id: number;
+  accountNumber: string;
+  balance: number;
+}

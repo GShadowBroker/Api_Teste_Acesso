@@ -1,4 +1,6 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, Logger, Req, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 import { FundTransfer } from './fund-transfer.model';
 import {
   TransferStatus,
@@ -8,11 +10,19 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class FundTransferService {
   private readonly logger = new Logger(FundTransferService.name);
 
-  constructor(@InjectModel('FundTransfer') private readonly fundTransferModel: Model<FundTransfer>) { }
+  constructor(
+    @InjectModel('FundTransfer') private readonly fundTransferModel: Model<FundTransfer>,
+    @Inject(REQUEST) private readonly request: Request
+  ) { }
+
+  // Standardized log for api consultations and fund transfer requests
+  private log(): void {
+    this.logger.log(`method: ${this.request.method} url: ${this.request.url} ip: ${this.request.ip} body: ${JSON.stringify(this.request.body)}`);
+  }
 
   async doFundTransfer(
     accountOrigin: string,
@@ -20,7 +30,10 @@ export class FundTransferService {
     value: number,
   ): Promise<TransactionIdResponse | HttpException> {
 
-    // validation
+    this.log();
+
+    // do basic user input validation
+    this.validateTransaction(accountOrigin, accountDestination, value);
 
     const fundTransfer = new FundTransfer(
       accountOrigin,
@@ -43,6 +56,9 @@ export class FundTransferService {
   async checkTransactionStatus(
     transactionId: string,
   ): Promise<TransactionStatusResponse | HttpException> {
+
+    this.log();
+
     if (!transactionId)
       throw new HttpException(
         {
@@ -84,5 +100,23 @@ export class FundTransferService {
       throw new HttpException(TransferStatus.ERROR, HttpStatus.NOT_FOUND);
     }
     return transaction;
+  }
+
+  private validateTransaction(accountOrigin: string, accountDestination: string, value: number): void {
+    if (!accountOrigin || typeof accountOrigin != 'string') {
+      throw new HttpException("Invalid or missing accountOrigin", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!accountDestination || typeof accountDestination != 'string') {
+      throw new HttpException("Invalid or missing accountDestination", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!value || isNaN(value)) {
+      throw new HttpException("Invalid or missing value", HttpStatus.BAD_REQUEST);
+    }
+
+    if (accountOrigin.toLowerCase() === accountDestination.toLowerCase()) {
+      throw new HttpException("Cannot transfer value to the same account", HttpStatus.BAD_REQUEST);
+    }
   }
 }
