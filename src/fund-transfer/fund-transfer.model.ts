@@ -9,11 +9,11 @@ export const FundTransferSchema = new mongoose.Schema({
   value: { type: Number, required: true },
   status: {
     type: String,
-    enum: ["In Queue", "Processing", "Confirmed", "Error"],
-    default: "In Queue"
+    enum: ['In Queue', 'Processing', 'Confirmed', 'Error'],
+    default: 'In Queue',
   },
-  errorMessage: { type: String, default: "" },
-  createdAt: { type: Date, required: true, default: Date.now }
+  errorMessage: { type: String, default: '' },
+  createdAt: { type: Date, required: true, default: Date.now },
 });
 
 /**
@@ -27,7 +27,7 @@ export class FundTransfer {
   readonly accountOrigin: string;
   readonly accountDestination: string;
   readonly value: number;
-  readonly status: TransferStatus.IN_QUEUE;
+  readonly status: TransferStatus;
 
   constructor(
     accountOrigin: string,
@@ -38,5 +38,6 @@ export class FundTransfer {
     this.accountOrigin = accountOrigin;
     this.accountDestination = accountDestination;
     this.value = value;
+    this.status = TransferStatus.IN_QUEUE;
   }
 }

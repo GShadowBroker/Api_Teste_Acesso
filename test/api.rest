@@ -1,7 +1,7 @@
 GET https://acessoaccount.herokuapp.com/api/Account
 
 ###
-GET https://acessoaccount.herokuapp.com/api/Account/14180104
+GET https://acessoaccount.herokuapp.com/api/Account/67621966
 
 ###
 POST https://acessoaccount.herokuapp.com/api/Account
@@ -21,10 +21,10 @@ POST http://localhost:3000/api/fund-transfer
 Content-Type: application/json
 
 {
-  "accountOrigin": "97267810",
-  "accountDestination": "97267810",
-  "value": 10.0
+  "accountOrigin": "67621966",
+  "accountDestination": "41753267",
+  "value": "580"
 }
 
 ###
-GET http://localhost:3000/api/fund-transfer/a4bc7de7-bc25-4a3e-a771-1a3bdc0a647d
+GET http://localhost:3000/api/fund-transfer/1bd2e56e-0028-43de-8480-3c19a9eefef0
