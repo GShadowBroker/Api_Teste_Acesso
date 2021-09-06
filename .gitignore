@@ -37,4 +37,4 @@ tests.js
 !.vscode/extensions.json
 
 # ENVIRONMENT VARIABLES
-.env
+/*.env

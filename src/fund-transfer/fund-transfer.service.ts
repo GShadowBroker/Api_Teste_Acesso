@@ -19,7 +19,7 @@ export class FundTransferService {
     @Inject(REQUEST) private readonly request: Request
   ) { }
 
-  // Standardized log for api consultations and fund transfer requests
+  // Standardized log for api usage and fund transfer requests
   private log(): void {
     this.logger.log(`method: ${this.request.method} url: ${this.request.url} ip: ${this.request.ip} body: ${JSON.stringify(this.request.body)}`);
   }
