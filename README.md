@@ -115,7 +115,7 @@ email  | string ou null | Campo opcional de e-mail para notificação sobre a tr
 
 ### Resposta:
 
-`200 OK`
+`201 OK`
 ```javascript
 {
   "transactionId": "2d4d97f7-dd9a-46f0-baa7-2045c0882e63"
