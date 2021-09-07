@@ -10,6 +10,7 @@ import axios from 'axios';
 export class BackgroundTasksService {
   private readonly logger = new Logger(BackgroundTasksService.name);
   private readonly pendingTransactions: string[] = [];
+  private counter = 1;
 
   constructor(
     @InjectModel('FundTransfer')
@@ -18,9 +19,12 @@ export class BackgroundTasksService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCron(): Promise<void> {
-    this.logger.log("Executing background task...");
 
-    let transactions = null;
+    this.logger.log(`Running background task nº ${this.counter}...`);
+    this.counter++;
+
+    // find all transactions whose status is 'In Queue'.
+    let transactions: FundTransfer[] = [];
     try {
       transactions = await this.fundTransferModel.find().where({ status: TransferStatus.IN_QUEUE }).exec();
     } catch (error) {
@@ -28,8 +32,12 @@ export class BackgroundTasksService {
       return;
     }
 
-    if (!transactions) return;
+    // change status to 'Processing'.
+    for (const transaction of transactions) {
+      await this.updateStatus(transaction.transactionId, TransferStatus.PROCESSING);
+    }
 
+    // process transactions.
     for (const transaction of transactions) {
       this.logger.log(`Processing transaction '${transaction.transactionId}'`);
       await this.handleFundTransfer(transaction);
@@ -55,12 +63,14 @@ export class BackgroundTasksService {
 
       if (!error.response) {
         this.logger.warn(`There was an error communicating with remote server. ${error.message}`);
+        await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
         return;
       }
 
       switch (error.response.status) {
         case HttpStatus.INTERNAL_SERVER_ERROR:
           this.logger.warn(`There was an error communicating with the remote server. ${error.message}`);
+          await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
           break;
         case HttpStatus.NOT_FOUND:
           this.logger.warn('Invalid account number');
@@ -69,6 +79,7 @@ export class BackgroundTasksService {
         default:
           this.logger.error(`There was an unexpected error. ${error.message}`);
           this.logger.error(error);
+          await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
           break;
       }
       return;
@@ -96,6 +107,7 @@ export class BackgroundTasksService {
     }
     if (!isDebitComplete) {
       this.logger.warn("Error finishing transaction on account origin.");
+      await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
       return;
     }
 
@@ -104,6 +116,7 @@ export class BackgroundTasksService {
     if (!isCreditComplete) {
       this.logger.warn("Error adding value to account destination. Retrying in the next cicle");
       this.pendingTransactions.push(transaction.transactionId);
+      await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
       return;
 
     } else {

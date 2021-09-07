@@ -19,11 +19,17 @@ export class FundTransferService {
     @Inject(REQUEST) private readonly request: Request
   ) { }
 
-  // Standardized log for api usage and fund transfer requests
+  /**
+   * Standardized log for incoming requests.
+   */
   private log(): void {
     this.logger.log(`method: ${this.request.method} url: ${this.request.url} ip: ${this.request.ip} body: ${JSON.stringify(this.request.body)}`);
   }
 
+  /**
+   * Saves a fund transfer request to the db and returns a transaction ID. This queues the request for
+   * processing by the BackgroundTaskService via cron job.
+   */
   async doFundTransfer(
     accountOrigin: string,
     accountDestination: string,
@@ -53,6 +59,12 @@ export class FundTransferService {
     return new TransactionIdResponse(newFundTransfer.transactionId);
   }
 
+  /**
+   * Queries the db for the status of a transaction defined by its transaction ID.
+   * @param transactionId [string]
+   * @return Returns a json object with the status, being In 'Queue', 'Processing', 'Error' or 'Confirmed'. If the
+   * status is 'Error', it also returns an error message with the reason why it failed.
+   */
   async checkTransactionStatus(
     transactionId: string,
   ): Promise<TransactionStatusResponse | HttpException> {
@@ -84,6 +96,9 @@ export class FundTransferService {
     return new TransactionStatusResponse(transaction.status);
   }
 
+  /**
+   * Queries the db for a Fund Transfer.
+   */
   private async findTransaction(
     transactionId: string,
   ): Promise<FundTransfer | HttpException> {
@@ -102,6 +117,9 @@ export class FundTransferService {
     return transaction;
   }
 
+  /**
+   * Basic validation for obvious mistakes. Further validations will be run when the transactions gets processed.
+   */
   private validateTransaction(accountOrigin: string, accountDestination: string, value: number): void {
     if (!accountOrigin || typeof accountOrigin != 'string') {
       throw new HttpException("Invalid or missing accountOrigin", HttpStatus.BAD_REQUEST);
@@ -115,7 +133,7 @@ export class FundTransferService {
       throw new HttpException("Invalid or missing value", HttpStatus.BAD_REQUEST);
     }
 
-    if (accountOrigin.toLowerCase() === accountDestination.toLowerCase()) {
+    if (accountOrigin === accountDestination) {
       throw new HttpException("Cannot transfer value to the same account", HttpStatus.BAD_REQUEST);
     }
   }
