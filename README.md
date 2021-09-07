@@ -7,13 +7,14 @@
 - TypeScript
 
 ## Instalação
-Clone o repositório:
 
+Clone o repositório:
 `$ git clone https://github.com/GShadowBroker/Api_Teste_Acesso.git`
 
-Entre na pasta do projeto e instale as dependências:
 
+Entre na pasta do projeto e instale as dependências:
 `$ cd Api_Teste_Acesso && npm install`
+
 
 Crie um arquivo `.env` e insira as variáveis:
 ```
@@ -29,22 +30,24 @@ Crie um arquivo `.env` e insira as variáveis:
 
 
 Inicie o servidor de desenvolvimento:
-
 `$ npm run start:dev`
 
 ![](https://i.imgur.com/DZr3LLR.png)
 
+
 ## REST API
 Os endpoints da API estão descritos abaixo:
+
 
 ### Solicitar status da transação:
 
 `GET https://teste-acesso.herokuapp.com/api/fund-transfer/{{ transactionId }}`
 
 
-Parâmetro  | Tipo
-------------- | -------------
-transactionId  | string
+Parâmetro  | Tipo | Descrição
+------------- | ------------- | ----------
+transactionId  | string | ID da transferência a ser usado para consulta do status.
+
 
 ### Resposta:
 
