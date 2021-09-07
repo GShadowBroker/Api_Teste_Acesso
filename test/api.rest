@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/api/fund-transfer/180802c1-5ca8-4630-b8f5-7456f061f164
+GET http://localhost:3000/api/fund-transfer/fed235aa-87f1-44d7-85fc-bb7b1ab03d9e
 
 ###
 
@@ -35,13 +35,13 @@ POST https://hidden-fortress-80978.herokuapp.com/api/fund-transfer
 Content-Type: application/json
 
 {
-  "accountOrigin": "22925432",
-  "accountDestination": "01920461",
-  "value": "5.000009"
+  "accountOrigin": "01920461",
+  "accountDestination": "22925432",
+  "value": "130.92891"
 }
 
 ###
 
-GET https://hidden-fortress-80978.herokuapp.com/api/fund-transfer/921c889a-065b-4f46-8859-4dbb244862ef
+GET https://hidden-fortress-80978.herokuapp.com/api/fund-transfer/3e9bab86-7926-48e3-96a5-b338e973f833
 
 ###

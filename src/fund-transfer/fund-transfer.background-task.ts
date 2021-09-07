@@ -32,7 +32,7 @@ export class BackgroundTasksService {
 
     for (const transaction of transactions) {
       this.logger.log(`Processing transaction '${transaction.transactionId}'`);
-      this.handleFundTransfer(transaction);
+      await this.handleFundTransfer(transaction);
     }
 
     await this.ping();
@@ -117,7 +117,7 @@ export class BackgroundTasksService {
     // update transaction status to confirmed
     const success = await this.updateStatus(transaction.transactionId, TransferStatus.CONFIRMED);
 
-    if (success) this.logger.log("Operation complete.");
+    if (success) this.logger.log("Transfer fully completed.");
   }
 
   private async findAccount(accountNumber: string): Promise<IAccount | null> {
@@ -193,7 +193,6 @@ export class BackgroundTasksService {
       });
 
       if (response?.status && response.status == HttpStatus.OK) {
-        this.logger.log(`Transfer complete: ${JSON.stringify(response.data, null, 2)}`);
         return true;
       }
 
