@@ -1,73 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Teste Técnico - BackEnd #VemSerAcesso
+> REST API para transferência de valores entre duas contas. Esta API oferece endpoints para solicitação e consulta de transferência, e faz uso da [API de conta](https://acessoaccount.herokuapp.com/swagger/index.html) fornecida pelo teste para consultar contas, saldo e fazer movimentação financeira.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### Tecnologias usadas:
+- NestJS
+- MongoDB
+- TypeScript
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### Instalação
+Clone o repositório:
+`$ git clone https://github.com/GShadowBroker/Api_Teste_Acesso.git`
 
-## Description
+Entre na pasta do projeto e instale as dependências:
+`$ cd Api_Teste_Acesso && npm install`
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Crie um arquivo `.env` e insira as variáveis:
+```
+	MONGODB_URI=
+    SERVER_BASE_URL=https://acessoaccount.herokuapp.com/api/Account
+    HOST_URL=https://teste-acesso.herokuapp.com/
+```
+| Variável | Descrição                    |
+| ------------- | ------------------------------ |
+| MONGODB_URI      | A URI com as credenciais para acesso ao banco de dados do MongoDB Atlas.       |
+| SERVER_BASE_URL   | A URL da API para a qual serão consultados o saldo, a conta e feita a transferência.     |
+| HOST_URL   | A URL base desta aplicação.     |
 
-## Installation
+Inicie o servidor de desenvolvimento:
+`$ npm run start:dev`
 
-```bash
-$ npm install
+![](https://i.imgur.com/DZr3LLR.png)
+
+### REST API
+Os endpoints da API estão descritos abaixo:
+
+##### Solicitar status da transação:
+
+`GET https://teste-acesso.herokuapp.com/api/fund-transfer/{{ transactionId }}`
+Parâmetro  | Tipo
+------------- | -------------
+transactionId  | string
+
+##### Resposta:
+`200 OK`
+```javascript
+{
+    "status": "In Queue"
+}
 ```
 
-## Running the app
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+###### ou
+`200 OK`
+```javascript
+{
+    "status": "Error",
+    "message": string
+}
 ```
 
-## Test
+Parâmetro  | Tipo | Descrição
+------------- | ------------- | ---------
+status  | string | Status atual da transação. Pode ser "In Queue", "Processing", "Confirmed" ou "Error".
+message | string ou null | Se o status for "Error", mensagem explicando o erro.
 
-```bash
-# unit tests
-$ npm run test
+##### Fazer nova transação:
 
-# e2e tests
-$ npm run test:e2e
+`POST https://teste-acesso.herokuapp.com/api/fund-transfer`
 
-# test coverage
-$ npm run test:cov
+##### Exemplo de Body:
+```javascript
+Content-Type: application/json
+{
+  "accountOrigin": "22925432",
+  "accountDestination": "01920461",
+  "value": 50.0
+}
 ```
+Parâmetro  | Tipo | Descrição
+------------- | ------------- | ---------
+accountOrigin  | string | Conta de onde o valor será transferido.
+accountDestination  | string | Conta para a qual o valor será transferido.
+value  | number | Valor a ser transferido.
 
-## Support
+##### Resposta:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+`200 OK`
+```javascript
+{
+  "transactionId": "2d4d97f7-dd9a-46f0-baa7-2045c0882e63"
+}
+```
+Parâmetro  | Tipo | Descrição
+------------- | ------------- | ---------
+transactionId  | string | ID da transferência.
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
