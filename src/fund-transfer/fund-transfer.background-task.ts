@@ -9,7 +9,7 @@ import axios from 'axios';
 @Injectable()
 export class BackgroundTasksService {
   private readonly logger = new Logger(BackgroundTasksService.name);
-  private readonly pendingTransferFromOrigin: string[] = [];
+  private readonly pendingTransactions: string[] = [];
 
   constructor(
     @InjectModel('FundTransfer')
@@ -87,31 +87,30 @@ export class BackgroundTasksService {
       return;
     }
 
-    // add value to destination
-    const isTransferToDestinationComplete = this.pendingTransferFromOrigin.indexOf(transaction.transactionId) > -1;
+    // subtract value from origin
+    const isOriginSubtracted = this.pendingTransactions.indexOf(transaction.transactionId) > -1;
 
-    let isCreditOperationFinished;
-    if (!isTransferToDestinationComplete) {
-      isCreditOperationFinished = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit");
+    let isDebitComplete: boolean;
+    if (!isOriginSubtracted) {
+      isDebitComplete = await this.executeTransfer(transaction.transactionId, transaction.accountOrigin, transaction.value, "Debit");
     }
-    if (!isCreditOperationFinished) {
-      this.logger.warn("Error finishing transaction on account destination.");
+    if (!isDebitComplete) {
+      this.logger.warn("Error finishing transaction on account origin.");
       return;
     }
 
     // subtract value from origin
-    const isDebitOperationFinished = await this.executeTransfer(transaction.transactionId, transaction.accountOrigin, transaction.value, "Debit");
-
-    if (!isDebitOperationFinished) {
-      this.logger.warn("Error finishing transaction on account origin. Retrying in the next cicle");
-      this.pendingTransferFromOrigin.push(transaction.transactionId);
+    const isCreditComplete = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit");
+    if (!isCreditComplete) {
+      this.logger.warn("Error adding value to account destination. Retrying in the next cicle");
+      this.pendingTransactions.push(transaction.transactionId);
       return;
 
     } else {
       // remove from pending array if complete
-      const index = this.pendingTransferFromOrigin.indexOf(transaction.transactionId);
+      const index = this.pendingTransactions.indexOf(transaction.transactionId);
       if (index > -1) {
-        this.pendingTransferFromOrigin.splice(index, 1);
+        this.pendingTransactions.splice(index, 1);
       }
     }
 
