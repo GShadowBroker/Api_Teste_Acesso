@@ -10,11 +10,13 @@ export class FundTransferController {
     @Body('accountOrigin') accountOrigin: string,
     @Body('accountDestination') accountDestination: string,
     @Body('value') value: number,
+    @Body('email') email?: string
   ) {
     return this.fundTransferService.doFundTransfer(
       accountOrigin,
       accountDestination,
       value,
+      email
     );
   }
 

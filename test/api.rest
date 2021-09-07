@@ -37,11 +37,11 @@ Content-Type: application/json
 {
   "accountOrigin": "77852843",
   "accountDestination": "40589183",
-  "value": 31
+  "value": 500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 }
 
 ###
 
-GET https://teste-acesso.herokuapp.com/api/fund-transfer/c2962e0a-87d2-43fc-97bd-f54da2efb7b3
+GET https://teste-acesso.herokuapp.com/api/fund-transfer/9b0bbb31-8335-45dd-8632-4ecf50ca90e7
 
 ###

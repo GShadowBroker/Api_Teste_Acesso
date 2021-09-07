@@ -87,12 +87,25 @@ Content-Type: application/json
   "value": 50.0
 }
 ```
+### ou opcionalmente
+
+```javascript
+Content-Type: application/json
+{
+  "accountOrigin": "22925432",
+  "accountDestination": "01920461",
+  "value": 50.0,
+  "email": "example@email.com"
+}
+```
+
 
 Parâmetro  | Tipo | Descrição
 ------------- | ------------- | ---------
 accountOrigin  | string | Conta de onde o valor será transferido.
 accountDestination  | string | Conta para a qual o valor será transferido.
 value  | number | Valor a ser transferido.
+email  | string ou null | Campo opcional de e-mail para notificação sobre a transação.
 
 
 ### Resposta:

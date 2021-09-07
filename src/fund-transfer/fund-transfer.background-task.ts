@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { SendGridService } from "@anchan828/nest-sendgrid";
 import { FundTransfer, IAccount } from './fund-transfer.model';
 import { TransferStatus } from './fund-transfer.http-response-models';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,6 +16,7 @@ export class BackgroundTasksService {
   constructor(
     @InjectModel('FundTransfer')
     private readonly fundTransferModel: Model<FundTransfer>,
+    private readonly sendGrid: SendGridService
   ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -73,8 +75,10 @@ export class BackgroundTasksService {
           await this.updateStatus(transaction.transactionId, TransferStatus.IN_QUEUE);
           break;
         case HttpStatus.NOT_FOUND:
-          this.logger.warn('Invalid account number');
-          await this.updateStatus(transaction.transactionId, TransferStatus.ERROR, "Invalid account number.");
+          const errorMessage = 'Invalid account number';
+          this.logger.warn(errorMessage);
+          await this.updateStatus(transaction.transactionId, TransferStatus.ERROR, errorMessage);
+          if (transaction.email) await this.sendEmail(transaction, TransferStatus.ERROR, errorMessage);
           break;
         default:
           this.logger.error(`There was an unexpected error. ${error.message}`);
@@ -87,6 +91,7 @@ export class BackgroundTasksService {
 
     if (!accountOrigin || !accountDestination) {
       await this.updateStatus(transaction.transactionId, TransferStatus.ERROR, "Invalid account number");
+      if (transaction.email) await this.sendEmail(transaction, TransferStatus.ERROR, "Invalid account number");
       return;
     }
 
@@ -95,6 +100,7 @@ export class BackgroundTasksService {
 
     if (!isValid) {
       await this.updateStatus(transaction.transactionId, TransferStatus.ERROR, reason);
+      if (transaction.email) await this.sendEmail(transaction, TransferStatus.ERROR, reason);
       return;
     }
 
@@ -103,7 +109,7 @@ export class BackgroundTasksService {
 
     let isDebitComplete: boolean;
     if (!isOriginSubtracted) {
-      isDebitComplete = await this.executeTransfer(transaction.transactionId, transaction.accountOrigin, transaction.value, "Debit");
+      isDebitComplete = await this.executeTransfer(transaction.transactionId, transaction.accountOrigin, transaction.value, "Debit", transaction);
     }
     if (!isDebitComplete) {
       this.logger.warn("Error finishing transaction on account origin.");
@@ -112,7 +118,7 @@ export class BackgroundTasksService {
     }
 
     // subtract value from origin
-    const isCreditComplete = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit");
+    const isCreditComplete = await this.executeTransfer(transaction.transactionId, transaction.accountDestination, transaction.value, "Credit", transaction);
     if (!isCreditComplete) {
       this.logger.warn("Error adding value to account destination. Retrying in the next cicle");
       this.pendingTransactions.push(transaction.transactionId);
@@ -130,7 +136,10 @@ export class BackgroundTasksService {
     // update transaction status to confirmed
     const success = await this.updateStatus(transaction.transactionId, TransferStatus.CONFIRMED);
 
-    if (success) this.logger.log("Transfer fully completed.");
+    if (success) {
+      this.logger.log("Transfer fully completed.");
+      if (transaction.email) await this.sendEmail(transaction, TransferStatus.CONFIRMED);
+    }
   }
 
   private async findAccount(accountNumber: string): Promise<IAccount | null> {
@@ -196,7 +205,7 @@ export class BackgroundTasksService {
    * @param type [Credit | Debit] string specifying whether operation is credit or debit.
    * @return [boolean] Returns a promise that resolves into a boolean. True if transfer was successful. False otherwise.
    */
-  private async executeTransfer(transactionId: string, accountNumber: string, value: number, type: "Credit" | "Debit"): Promise<boolean> {
+  private async executeTransfer(transactionId: string, accountNumber: string, value: number, type: "Credit" | "Debit", transaction: FundTransfer): Promise<boolean> {
     let response = null;
     try {
       response = await axios.post(process.env.SERVER_BASE_URL, {
@@ -222,6 +231,7 @@ export class BackgroundTasksService {
         case HttpStatus.NOT_FOUND:
           this.logger.warn(`Invalid account number '${accountNumber}'.`);
           await this.updateStatus(transactionId, TransferStatus.ERROR, "Invalid account number.");
+          if (transaction.email) this.sendEmail(transaction, TransferStatus.ERROR, "Invalid account number.");
           break;
 
         default:
@@ -239,5 +249,55 @@ export class BackgroundTasksService {
    */
   private async ping() {
     return axios.get(process.env.HOST_URL);
+  }
+
+  /**
+   * Sends an email notification to the registered email about the status change of a transaction.
+   * @param transaction [FundTransfer] The transaction object.
+   * @param status [string] The new status of the transaction.
+   * @param errorMessage [string] Optional error message when the transaction fails.
+   * @return Returns true if email was sent with not errors. False otherwise.
+   */
+  private async sendEmail(transaction: FundTransfer, status: TransferStatus, errorMessage?: string): Promise<boolean> {
+    let title: string;
+    let text: string;
+
+    let shouldSend = false;
+    switch (status) {
+      case (TransferStatus.CONFIRMED):
+        title = "Your transaction has been completed successfully.";
+        text = "Your transaction went through successfully and no further action on your part is necessary.";
+        shouldSend = true;
+        break;
+      case (TransferStatus.ERROR):
+        title = "Your transaction cannot be completed.";
+        text = `Your transaction failed with the following error message: ${errorMessage}`;
+        shouldSend = true;
+        break;
+      default:
+        break;
+    }
+
+    if (!shouldSend) return false;
+
+    try {
+      await this.sendGrid.send({
+        to: transaction.email,
+        from: process.env.FROM_EMAIL,
+        subject: title,
+        text,
+        html: `
+            <h3><strong>${text}</strong></h3>
+            <p>If you have not registered this e-mail for notification and you think this is a mistake,
+            please ignore it.</p>
+          `,
+      });
+
+    } catch (error) {
+      this.logger.error(`Failed to send email notification to '${transaction.email}'`, error.message);
+      return false;
+    }
+
+    return true;
   }
 }

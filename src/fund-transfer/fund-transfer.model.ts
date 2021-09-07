@@ -7,6 +7,7 @@ export const FundTransferSchema = new mongoose.Schema({
   accountOrigin: { type: String, required: true },
   accountDestination: { type: String, required: true },
   value: { type: Number, required: true },
+  email: { type: String },
   status: {
     type: String,
     enum: ['In Queue', 'Processing', 'Confirmed', 'Error'],
@@ -27,17 +28,20 @@ export class FundTransfer {
   readonly accountOrigin: string;
   readonly accountDestination: string;
   readonly value: number;
+  readonly email: string | undefined;
   readonly status: TransferStatus;
 
   constructor(
     accountOrigin: string,
     accountDestination: string,
     value: number,
+    email?: string | undefined
   ) {
     this.transactionId = uuidv4();
     this.accountOrigin = accountOrigin;
     this.accountDestination = accountDestination;
     this.value = value;
+    this.email = email;
     this.status = TransferStatus.IN_QUEUE;
   }
 }

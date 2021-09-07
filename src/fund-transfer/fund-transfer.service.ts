@@ -34,17 +34,19 @@ export class FundTransferService {
     accountOrigin: string,
     accountDestination: string,
     value: number,
+    email?: string | undefined
   ): Promise<TransactionIdResponse | HttpException> {
 
     this.log();
 
     // do basic user input validation
-    this.validateTransaction(accountOrigin, accountDestination, value);
+    this.validateTransaction(accountOrigin, accountDestination, value, email);
 
     const fundTransfer = new FundTransfer(
       accountOrigin,
       accountDestination,
       value,
+      email
     );
 
     // save in db
@@ -120,7 +122,7 @@ export class FundTransferService {
   /**
    * Basic validation for obvious mistakes. Further validations will be run when the transactions gets processed.
    */
-  private validateTransaction(accountOrigin: string, accountDestination: string, value: number): void {
+  private validateTransaction(accountOrigin: string, accountDestination: string, value: number, email?: string | undefined): void {
     if (!accountOrigin || typeof accountOrigin != 'string') {
       throw new HttpException("Invalid or missing accountOrigin", HttpStatus.BAD_REQUEST);
     }
@@ -135,6 +137,14 @@ export class FundTransferService {
 
     if (accountOrigin === accountDestination) {
       throw new HttpException("Cannot transfer value to the same account", HttpStatus.BAD_REQUEST);
+    }
+
+    if (!email) return;
+
+    const isValidEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+
+    if (!isValidEmail) {
+      throw new HttpException(`Invalid e-mail address: ${email}`, HttpStatus.BAD_REQUEST);
     }
   }
 }
