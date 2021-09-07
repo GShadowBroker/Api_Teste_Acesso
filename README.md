@@ -19,14 +19,19 @@ Entre na pasta do projeto e instale as dependências:
 Crie um arquivo `.env` e insira as variáveis:
 ```
 	MONGODB_URI=
-    SERVER_BASE_URL=https://acessoaccount.herokuapp.com/api/Account
-    HOST_URL=https://teste-acesso.herokuapp.com/
+  SERVER_BASE_URL=https://acessoaccount.herokuapp.com/api/Account
+  HOST_URL=https://teste-acesso.herokuapp.com/
+  SENDGRID_ACCESS_KEY=
+  FROM_EMAIL=
+
 ```
 | Variável | Descrição                    |
 | ------------- | ------------------------------ |
 | MONGODB_URI      | A URI com as credenciais para acesso ao banco de dados do MongoDB Atlas.       |
 | SERVER_BASE_URL   | A URL da API para a qual serão consultados o saldo, a conta e feita a transferência.     |
 | HOST_URL   | A URL base desta aplicação.     |
+| SENDGRID_ACCESS_KEY   | Chave da API do SendGrid para envio de notificações por e-mail.     |
+| FROM_EMAIL   | E-mail sob o qual os e-mails serão enviados.     |
 
 
 Inicie o servidor de desenvolvimento:

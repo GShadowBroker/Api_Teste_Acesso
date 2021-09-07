@@ -35,13 +35,14 @@ POST https://teste-acesso.herokuapp.com/api/fund-transfer
 Content-Type: application/json
 
 {
-  "accountOrigin": "77852843",
-  "accountDestination": "40589183",
-  "value": 500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  "accountOrigin": "11890010",
+  "accountDestination": "82771260",
+  "value": 90,
+  "email": "jeser73705@sicmag.com"
 }
 
 ###
 
-GET https://teste-acesso.herokuapp.com/api/fund-transfer/9b0bbb31-8335-45dd-8632-4ecf50ca90e7
+GET https://teste-acesso.herokuapp.com/api/fund-transfer/31a86270-fcd8-4ec5-867f-1dc01cc5d757
 
 ###
