@@ -35,13 +35,13 @@ POST https://teste-acesso.herokuapp.com/api/fund-transfer
 Content-Type: application/json
 
 {
-  "accountOrigin": "22925432",
-  "accountDestination": "01920461",
-  "value": "50"
+  "accountOrigin": "77852843",
+  "accountDestination": "40589183",
+  "value": 31
 }
 
 ###
 
-GET https://teste-acesso.herokuapp.com/api/fund-transfer/2d4d97f7-dd9a-46f0-baa7-2045c0882e63
+GET https://teste-acesso.herokuapp.com/api/fund-transfer/c2962e0a-87d2-43fc-97bd-f54da2efb7b3
 
 ###

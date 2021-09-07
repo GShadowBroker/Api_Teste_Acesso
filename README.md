@@ -64,7 +64,7 @@ transactionId  | string | ID da transferência a ser usado para consulta do stat
 ```javascript
 {
     "status": "Error",
-    "message": string
+    "message": "Insufficient funds on account origin to achieve this transaction"
 }
 ```
 
