@@ -1,4 +1,4 @@
-# Teste Técnico - BackEnd #VemSerAcesso
+# NestJS API BackEnd
 > REST API para transferência de valores entre duas contas. Esta API oferece endpoints para solicitação e consulta de transferência, e faz uso da [API de conta](https://acessoaccount.herokuapp.com/swagger/index.html) fornecida pelo teste para consultar contas, saldo e fazer movimentação financeira.
 
 ## Tecnologias usadas:
